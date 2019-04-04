@@ -4,7 +4,11 @@ namespace CascadiaCollege.Models
 {
     public enum Grade
     {
-        A, B, C, D, F
+        A,
+        B,
+        C,
+        D,
+        F
     }
 
     public class Enrollment
@@ -12,6 +16,7 @@ namespace CascadiaCollege.Models
         public int EnrollmentID { get; set; }
         public int CourseID { get; set; }
         public int StudentID { get; set; }
+
         [DisplayFormat(NullDisplayText = "No grade")]
         public Grade? Grade { get; set; }
 
@@ -19,4 +24,3 @@ namespace CascadiaCollege.Models
         public virtual Student Student { get; set; }
     }
 }
-

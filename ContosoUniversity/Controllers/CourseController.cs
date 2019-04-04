@@ -1,29 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
+﻿using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
 using CascadiaCollege.DAL;
 using CascadiaCollege.Models;
-using System.Data.Entity.Infrastructure;
 
 namespace CascadiaCollege.Controllers
 {
     public class CourseController : Controller
     {
-        private SchoolContext db = new SchoolContext();
+        private readonly SchoolContext db = new SchoolContext();
 
         // GET: Course
         public ActionResult Index(int? SelectedDepartment)
         {
             var departments = db.Departments.OrderBy(q => q.Name).ToList();
             ViewBag.SelectedDepartment = new SelectList(departments, "DepartmentID", "Name", SelectedDepartment);
-            int departmentID = SelectedDepartment.GetValueOrDefault();
+            var departmentID = SelectedDepartment.GetValueOrDefault();
 
-            IQueryable<Course> courses = db.Courses
+            var courses = db.Courses
                 .Where(c => !SelectedDepartment.HasValue || c.DepartmentID == departmentID)
                 .OrderBy(d => d.CourseID)
                 .Include(d => d.Department);
@@ -34,15 +30,9 @@ namespace CascadiaCollege.Controllers
         // GET: Course/Details/5
         public ActionResult Details(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Course course = db.Courses.Find(id);
-            if (course == null)
-            {
-                return HttpNotFound();
-            }
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var course = db.Courses.Find(id);
+            if (course == null) return HttpNotFound();
             return View(course);
         }
 
@@ -55,7 +45,8 @@ namespace CascadiaCollege.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "CourseID,Title,Credits,DepartmentID")]Course course)
+        public ActionResult Create([Bind(Include = "CourseID,Title,Credits,DepartmentID")]
+            Course course)
         {
             try
             {
@@ -69,39 +60,32 @@ namespace CascadiaCollege.Controllers
             catch (RetryLimitExceededException /* dex */)
             {
                 //Log the error (uncomment dex variable name and add a line here to write a log.)
-                ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists, see your system administrator.");
+                ModelState.AddModelError("",
+                    "Unable to save changes. Try again, and if the problem persists, see your system administrator.");
             }
+
             PopulateDepartmentsDropDownList(course.DepartmentID);
             return View(course);
         }
 
         public ActionResult Edit(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Course course = db.Courses.Find(id);
-            if (course == null)
-            {
-                return HttpNotFound();
-            }
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var course = db.Courses.Find(id);
+            if (course == null) return HttpNotFound();
             PopulateDepartmentsDropDownList(course.DepartmentID);
             return View(course);
         }
 
-        [HttpPost, ActionName("Edit")]
+        [HttpPost]
+        [ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public ActionResult EditPost(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             var courseToUpdate = db.Courses.Find(id);
             if (TryUpdateModel(courseToUpdate, "",
-               new string[] { "Title", "Credits", "DepartmentID" }))
-            {
+                new[] {"Title", "Credits", "DepartmentID"}))
                 try
                 {
                     db.SaveChanges();
@@ -111,9 +95,10 @@ namespace CascadiaCollege.Controllers
                 catch (RetryLimitExceededException /* dex */)
                 {
                     //Log the error (uncomment dex variable name and add a line here to write a log.
-                    ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists, see your system administrator.");
+                    ModelState.AddModelError("",
+                        "Unable to save changes. Try again, and if the problem persists, see your system administrator.");
                 }
-            }
+
             PopulateDepartmentsDropDownList(courseToUpdate.DepartmentID);
             return View(courseToUpdate);
         }
@@ -121,8 +106,8 @@ namespace CascadiaCollege.Controllers
         private void PopulateDepartmentsDropDownList(object selectedDepartment = null)
         {
             var departmentsQuery = from d in db.Departments
-                                   orderby d.Name
-                                   select d;
+                orderby d.Name
+                select d;
             ViewBag.DepartmentID = new SelectList(departmentsQuery, "DepartmentID", "Name", selectedDepartment);
         }
 
@@ -130,24 +115,19 @@ namespace CascadiaCollege.Controllers
         // GET: Course/Delete/5
         public ActionResult Delete(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Course course = db.Courses.Find(id);
-            if (course == null)
-            {
-                return HttpNotFound();
-            }
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var course = db.Courses.Find(id);
+            if (course == null) return HttpNotFound();
             return View(course);
         }
 
         // POST: Course/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
+        [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Course course = db.Courses.Find(id);
+            var course = db.Courses.Find(id);
             db.Courses.Remove(course);
             db.SaveChanges();
             return RedirectToAction("Index");
@@ -162,18 +142,14 @@ namespace CascadiaCollege.Controllers
         public ActionResult UpdateCourseCredits(int? multiplier)
         {
             if (multiplier != null)
-            {
-                ViewBag.RowsAffected = db.Database.ExecuteSqlCommand("UPDATE Course SET Credits = Credits * {0}", multiplier);
-            }
+                ViewBag.RowsAffected =
+                    db.Database.ExecuteSqlCommand("UPDATE Course SET Credits = Credits * {0}", multiplier);
             return View();
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
+            if (disposing) db.Dispose();
             base.Dispose(disposing);
         }
     }

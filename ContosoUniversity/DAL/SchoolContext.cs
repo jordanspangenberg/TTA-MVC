@@ -1,6 +1,6 @@
-﻿using CascadiaCollege.Models;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using CascadiaCollege.Models;
 
 namespace CascadiaCollege.DAL
 {

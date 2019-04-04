@@ -10,4 +10,3 @@ namespace CascadiaCollege.ViewModels
         public IEnumerable<Enrollment> Enrollments { get; set; }
     }
 }
-

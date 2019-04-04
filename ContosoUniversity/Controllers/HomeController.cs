@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using CascadiaCollege.DAL;
 using CascadiaCollege.ViewModels;
-
 
 namespace CascadiaCollege.Controllers
 {
     public class HomeController : Controller
     {
-        private SchoolContext db = new SchoolContext();
+        private readonly SchoolContext db = new SchoolContext();
 
         public ActionResult Index()
         {
@@ -30,14 +27,15 @@ namespace CascadiaCollege.Controllers
             //           };
 
             // SQL version of the above LINQ code.
-            string query = "SELECT EnrollmentDate, COUNT(*) AS StudentCount "
-                + "FROM Person "
-                + "WHERE Discriminator = 'Student' "
-                + "GROUP BY EnrollmentDate";
+            var query = "SELECT EnrollmentDate, COUNT(*) AS StudentCount "
+                        + "FROM Person "
+                        + "WHERE Discriminator = 'Student' "
+                        + "GROUP BY EnrollmentDate";
             IEnumerable<EnrollmentDateGroup> data = db.Database.SqlQuery<EnrollmentDateGroup>(query);
 
             return View(data.ToList());
         }
+
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
